@@ -8,7 +8,7 @@
 # Change this subnet to correspond to your private
 # ethernet subnet.  Home will use HOME_NET/24 and
 # Office will use OFFICE_NET/24.
-PRIVATE=10.0.0.0/24
+PRIVATE=192.168.0.0/24
 
 # Loopback address
 LOOP=127.0.0.1
@@ -26,28 +26,28 @@ iptables -P INPUT DROP
 iptables -P FORWARD DROP
 
 # Prevent external packets from using loopback addr
-iptables -A INPUT -i eth0 -s $LOOP -j DROP
-iptables -A FORWARD -i eth0 -s $LOOP -j DROP
-iptables -A INPUT -i eth0 -d $LOOP -j DROP
-iptables -A FORWARD -i eth0 -d $LOOP -j DROP
+iptables -A INPUT -i enp2s0 -s $LOOP -j DROP
+iptables -A FORWARD -i enp2s0 -s $LOOP -j DROP
+iptables -A INPUT -i enp2s0 -d $LOOP -j DROP
+iptables -A FORWARD -i enp2s0 -d $LOOP -j DROP
 
 # Anything coming from the Internet should have a real Internet address
-iptables -A FORWARD -i eth0 -s 192.168.0.0/16 -j DROP
-iptables -A FORWARD -i eth0 -s 172.16.0.0/12 -j DROP
-iptables -A FORWARD -i eth0 -s 10.0.0.0/8 -j DROP
-iptables -A INPUT -i eth0 -s 192.168.0.0/16 -j DROP
-iptables -A INPUT -i eth0 -s 172.16.0.0/12 -j DROP
-iptables -A INPUT -i eth0 -s 10.0.0.0/8 -j DROP
+iptables -A FORWARD -i enp2s0 -s 192.168.0.0/16 -j DROP
+iptables -A FORWARD -i enp2s0 -s 172.16.0.0/12 -j DROP
+iptables -A FORWARD -i enp2s0 -s 10.0.0.0/8 -j DROP
+iptables -A INPUT -i enp2s0-s 192.168.0.0/16 -j DROP
+iptables -A INPUT -i enp2s0 -s 172.16.0.0/12 -j DROP
+iptables -A INPUT -i enp2s0 -s 10.0.0.0/8 -j DROP
 
 # Block outgoing NetBios (if you have windows machines running
 # on the private subnet).  This will not affect any NetBios
 # traffic that flows over the VPN tunnel, but it will stop
 # local windows machines from broadcasting themselves to
 # the internet.
-iptables -A FORWARD -p tcp --sport 137:139 -o eth0 -j DROP
-iptables -A FORWARD -p udp --sport 137:139 -o eth0 -j DROP
-iptables -A OUTPUT -p tcp --sport 137:139 -o eth0 -j DROP
-iptables -A OUTPUT -p udp --sport 137:139 -o eth0 -j DROP
+iptables -A FORWARD -p tcp --sport 137:139 -o enp2s0 -j DROP
+iptables -A FORWARD -p udp --sport 137:139 -o enp2s0 -j DROP
+iptables -A OUTPUT -p tcp --sport 137:139 -o enp2s0 -j DROP
+iptables -A OUTPUT -p udp --sport 137:139 -o enp2s0 -j DROP
 
 # Check source address validity on packets going out to internet
 iptables -A FORWARD -s ! $PRIVATE -i eth1 -j DROP
@@ -99,10 +99,10 @@ iptables -A INPUT -i eth1 -j ACCEPT
 iptables -A FORWARD -i eth1 -j ACCEPT
 
 # Keep state of connections from local machine and private subnets
-iptables -A OUTPUT -m state --state NEW -o eth0 -j ACCEPT
+iptables -A OUTPUT -m state --state NEW -o enp2s0 -j ACCEPT
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A FORWARD -m state --state NEW -o eth0 -j ACCEPT
+iptables -A FORWARD -m state --state NEW -o enp2s0 -j ACCEPT
 iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # Masquerade local subnet
-iptables -t nat -A POSTROUTING -s $PRIVATE -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s $PRIVATE -o enp2s0 -j MASQUERADE
